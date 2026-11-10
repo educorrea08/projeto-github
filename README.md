@@ -80,6 +80,7 @@ Durante o desenvolvimento foram praticados:
 
 **Eduardo Correa**
 Estudante de Ciência da Computação — UNICID
+rgm: 47674245
 
 ## Licença
 

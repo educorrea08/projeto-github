@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jogo da Forca</title>
+  <style>
+:root {
+  --quadro: #1f3a34;
+  --moldura: #6b4a2b;
+  --giz: #f1f0e8;
+  --giz-amarelo: #f2d675;
+  --giz-apagado: #7f9a92;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #e9e6df;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: var(--giz);
+}
+
+.quadro {
+  width: min(760px, 100%);
+  padding: 28px 24px 32px;
+  background: var(--quadro);
+  border: 12px solid var(--moldura);
+  border-radius: 6px;
+  text-align: center;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-family: "Comic Sans MS", "Chalkboard SE", cursive;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.jogo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+#forca {
+  width: 200px;
+  height: 240px;
+  fill: none;
+  stroke: var(--giz);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.parte { opacity: 0; transition: opacity 0.25s; }
+.parte.visivel { opacity: 1; stroke: var(--giz-amarelo); }
+
+.painel { flex: 1 1 280px; }
+
+.dica { margin: 0 0 12px; color: var(--giz-apagado); }
+
+.palavra {
+  margin: 0 0 12px;
+  font-size: 2.2rem;
+  letter-spacing: 0.35em;
+  min-height: 1.3em;
+  word-break: break-all;
+}
+
+.status { margin: 0 0 8px; }
+
+.mensagem { min-height: 1.5em; margin: 0 0 14px; font-weight: 700; color: var(--giz-amarelo); }
+
+.teclado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.teclado button {
+  width: 42px;
+  height: 42px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--giz);
+  background: transparent;
+  border: 2px solid var(--giz);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.teclado button:disabled {
+  color: var(--giz-apagado);
+  border-color: var(--giz-apagado);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+.teclado button.acerto:disabled { background: rgba(241, 240, 232, 0.15); }
+
+#novo {
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: var(--quadro);
+  background: var(--giz);
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:focus-visible { outline: 3px solid var(--giz-amarelo); outline-offset: 2px; }
+
+@media (max-width: 480px) {
+  .palavra { font-size: 1.7rem; }
+  .teclado button { width: 36px; height: 38px; }
+}
+</style>
+</head>
+<body>
+  <main class="quadro">
+    <h1>Jogo da Forca</h1>
+
+    <div class="jogo">
+      <svg id="forca" viewBox="0 0 200 240" aria-label="Desenho da forca">
+        <line x1="20" y1="225" x2="130" y2="225"/>
+        <line x1="50" y1="225" x2="50" y2="20"/>
+        <line x1="50" y1="20" x2="140" y2="20"/>
+        <line x1="140" y1="20" x2="140" y2="50"/>
+        <circle class="parte" cx="140" cy="68" r="18"/>
+        <line class="parte" x1="140" y1="86" x2="140" y2="150"/>
+        <line class="parte" x1="140" y1="100" x2="115" y2="128"/>
+        <line class="parte" x1="140" y1="100" x2="165" y2="128"/>
+        <line class="parte" x1="140" y1="150" x2="118" y2="190"/>
+        <line class="parte" x1="140" y1="150" x2="162" y2="190"/>
+      </svg>
+
+      <section class="painel">
+        <p id="dica" class="dica"></p>
+        <p id="palavra" class="palavra" aria-live="polite"></p>
+        <p class="status">Erros: <span id="erros">0</span> de 6</p>
+        <p id="mensagem" class="mensagem" aria-live="assertive"></p>
+        <button id="novo" type="button">Novo jogo</button>
+      </section>
+    </div>
+
+    <div id="teclado" class="teclado" aria-label="Teclado de letras"></div>
+  </main>
+
+  <script>
+// Lista de palavras com dica (pode adicionar mais!)
+const PALAVRAS = [
+  { palavra: "algoritmo", dica: "Sequência de passos para resolver um problema" },
+  { palavra: "variavel", dica: "Guarda um valor na memória" },
+  { palavra: "repositorio", dica: "Onde fica o projeto no GitHub" },
+  { palavra: "commit", dica: "Registro de uma alteração no Git" },
+  { palavra: "navegador", dica: "Programa usado para abrir sites" },
+  { palavra: "teclado", dica: "Periférico usado para digitar" },
+  { palavra: "internet", dica: "Rede mundial de computadores" },
+  { palavra: "programacao", dica: "Arte de escrever código" },
+  { palavra: "funcao", dica: "Bloco de código que pode ser reutilizado" },
+  { palavra: "banco de dados", dica: "Lugar onde as informações são armazenadas" }
+];
+
+const MAX_ERROS = 6;
+
+const elPalavra = document.getElementById("palavra");
+const elDica = document.getElementById("dica");
+const elErros = document.getElementById("erros");
+const elMensagem = document.getElementById("mensagem");
+const elTeclado = document.getElementById("teclado");
+const partes = document.querySelectorAll(".parte");
+
+let secreta = "";
+let letrasCertas = [];
+let letrasErradas = [];
+let fimDeJogo = false;
+
+// Tira acentos para comparar letras (ex.: "ç" vira "c")
+function normalizar(texto) {
+  return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function criarTeclado() {
+  elTeclado.innerHTML = "";
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letra => {
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.textContent = letra;
+    botao.dataset.letra = letra.toLowerCase();
+    botao.addEventListener("click", () => jogar(letra.toLowerCase()));
+    elTeclado.appendChild(botao);
+  });
+}
+
+function mostrarPalavra() {
+  const texto = secreta.split("").map(letra => {
+    if (letra === " ") return " ";
+    return letrasCertas.includes(normalizar(letra)) ? letra : "_";
+  });
+  elPalavra.textContent = texto.join(" ");
+}
+
+function atualizarForca() {
+  partes.forEach((parte, i) => parte.classList.toggle("visivel", i < letrasErradas.length));
+  elErros.textContent = letrasErradas.length;
+}
+
+function terminar(ganhou) {
+  fimDeJogo = true;
+  elTeclado.querySelectorAll("button").forEach(b => (b.disabled = true));
+  elMensagem.textContent = ganhou
+    ? "Parabéns, você acertou!"
+    : "Fim de jogo! A palavra era: " + secreta.toUpperCase();
+}
+
+function jogar(letra) {
+  if (fimDeJogo) return;
+  if (letrasCertas.includes(letra) || letrasErradas.includes(letra)) return;
+
+  const botao = elTeclado.querySelector(`[data-letra="${letra}"]`);
+  botao.disabled = true;
+
+  if (normalizar(secreta).includes(letra)) {
+    letrasCertas.push(letra);
+    botao.classList.add("acerto");
+    mostrarPalavra();
+    const venceu = normalizar(secreta).split("").every(l => l === " " || letrasCertas.includes(l));
+    if (venceu) terminar(true);
+  } else {
+    letrasErradas.push(letra);
+    atualizarForca();
+    if (letrasErradas.length >= MAX_ERROS) terminar(false);
+  }
+}
+
+function novoJogo() {
+  const sorteada = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
+  secreta = sorteada.palavra;
+  elDica.textContent = "Dica: " + sorteada.dica;
+  letrasCertas = [];
+  letrasErradas = [];
+  fimDeJogo = false;
+  elMensagem.textContent = "";
+  criarTeclado();
+  mostrarPalavra();
+  atualizarForca();
+}
+
+// Aceita também o teclado do computador
+document.addEventListener("keydown", e => {
+  const letra = normalizar(e.key);
+  if (/^[a-z]$/.test(letra)) jogar(letra);
+});
+
+document.getElementById("novo").addEventListener("click", novoJogo);
+
+novoJogo();
+</script>
+</body>
+</html>

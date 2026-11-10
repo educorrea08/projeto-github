@@ -1,7 +1,10 @@
-# projeto-github
 # Jogo da Forca
 
 Jogo da forca feito com HTML, CSS e JavaScript, desenvolvido como atividade prática de Git e GitHub.
+
+**Jogue aqui:** https://educorrea08.github.io/projeto-github/
+
+**Repositório:** https://github.com/educorrea08/projeto-github
 
 ## Sobre o projeto
 
@@ -45,6 +48,8 @@ projeto-github/
    cd projeto-github
    ```
 3. Abra o arquivo `index.html` no navegador (ou use a extensão Live Server do VS Code).
+
+Se preferir, é só acessar a versão online: https://educorrea08.github.io/projeto-github/
 
 ## Como jogar
 

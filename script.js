@@ -10,6 +10,7 @@ const PALAVRAS = [
   { palavra: "programacao", dica: "Arte de escrever código" },
   { palavra: "funcao", dica: "Bloco de código que pode ser reutilizado" },
   { palavra: "banco de dados", dica: "Lugar onde as informações são armazenadas" }
+  { palavra: "javascript", dica: "Linguagem que dá vida às páginas web" },
 ];
 
 const MAX_ERROS = 6;
